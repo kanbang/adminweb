@@ -1,3 +1,11 @@
+/*
+ * @Descripttion:
+ * @version: 0.x
+ * @Author: zhai
+ * @Date: 2024-05-09 08:31:31
+ * @LastEditors: zhai
+ * @LastEditTime: 2024-05-09 09:23:49
+ */
 // 模拟后端动态生成路由
 import { defineFakeRoute } from "vite-plugin-fake-server/client";
 
@@ -38,6 +46,53 @@ const permissionRouter = {
   ]
 };
 
+const systemManagementRouter = {
+  path: "/system",
+  meta: {
+    icon: "ri:settings-3-line",
+    title: "menus.pureSysManagement",
+    rank: 15
+  },
+  children: [
+    {
+      path: "/system/user/index",
+      name: "SystemUser",
+      meta: {
+        icon: "ri:admin-line",
+        title: "menus.pureUser",
+        roles: ["admin"]
+      }
+    },
+    {
+      path: "/system/role/index",
+      name: "SystemRole",
+      meta: {
+        icon: "ri:admin-fill",
+        title: "menus.pureRole",
+        roles: ["admin"]
+      }
+    },
+    {
+      path: "/system/menu/index",
+      name: "SystemMenu",
+      meta: {
+        icon: "ep:menu",
+        title: "menus.pureSystemMenu",
+        roles: ["admin"]
+      }
+    },
+    {
+      path: "/system/dept/index",
+      name: "SystemDept",
+      meta: {
+        icon: "ri:git-branch-line",
+        title: "menus.pureDept",
+        roles: ["admin"]
+      }
+    }
+  ]
+};
+
 export default defineFakeRoute([
   {
     url: "/get-async-routes",
@@ -45,7 +100,7 @@ export default defineFakeRoute([
     response: () => {
       return {
         success: true,
-        data: [permissionRouter]
+        data: [systemManagementRouter, permissionRouter]
       };
     }
   }

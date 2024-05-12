@@ -1,4 +1,13 @@
+/*
+ * @Descripttion:
+ * @version: 0.x
+ * @Author: zhai
+ * @Date: 2024-05-09 08:31:31
+ * @LastEditors: zhai
+ * @LastEditTime: 2024-05-11 18:18:01
+ */
 import { http } from "@/utils/http";
+import { CrudApi } from "./crud-api";
 
 export type UserResult = {
   success: boolean;
@@ -41,3 +50,13 @@ export const getLogin = (data?: object) => {
 export const refreshTokenApi = (data?: object) => {
   return http.request<RefreshTokenResult>("post", "/refresh-token", { data });
 };
+
+export class UserApi extends CrudApi {
+  constructor() {
+    super("users");
+  }
+
+  register(data?: T) {
+    return http.request<T>("post", `/${this.prefix}/register`, { data });
+  }
+}
