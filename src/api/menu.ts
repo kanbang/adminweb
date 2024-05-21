@@ -1,3 +1,4 @@
+import { http } from "@/utils/http";
 import { CrudApi } from "./crud-api";
 
 export class MenuApi extends CrudApi {
@@ -5,11 +6,8 @@ export class MenuApi extends CrudApi {
     super("menu");
   }
 
-  // export_csv(id?: string) {
-  //   return request({
-  //     url: `/${this.prefix}/export_csv/${id}`,
-  //     method: 'GET',
-  //     responseType: "blob"
-  //   });
-  // }
+  // Query Many By Filter Value
+  routes() {
+    return http.request("post", `/${this.prefix}/routes`);
+  }
 }

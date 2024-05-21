@@ -41,11 +41,13 @@ import {
   onMounted
 } from "vue";
 import { UserApi } from "@/api/user";
+import { RolesApi } from "@/api/roles";
 
-export function useUser(tableRef: Ref, treeRef: Ref) {
+// export function useUser(tableRef: Ref, treeRef: Ref) {
+export function useUser(tableRef: Ref) {
   const form = reactive({
     // 左侧部门树的id
-    deptId: "",
+    // deptId: "",
     username: "",
     phone: "",
     is_active: true
@@ -58,9 +60,9 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
   const avatarInfo = ref();
   const switchLoadMap = ref({});
   const { switchStyle } = usePublicHooks();
-  const higherDeptOptions = ref();
-  const treeData = ref([]);
-  const treeLoading = ref(true);
+  // const higherDeptOptions = ref();
+  // const treeData = ref([]);
+  // const treeLoading = ref(true);
   const selectedNum = ref(0);
   const pagination = reactive<PaginationProps>({
     total: 0,
@@ -111,10 +113,10 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
       cellRenderer: ({ row, props }) => (
         <el-tag
           size={props.size}
-          type={row.sex === 1 ? "danger" : null}
+          type={row.sex === "女" ? "danger" : null}
           effect="plain"
         >
-          {row.sex === 1 ? "女" : "男"}
+          {row.sex}
         </el-tag>
       )
     },
@@ -234,8 +236,11 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
     console.log(row);
   }
 
-  function handleDelete(row) {
-    message(`您删除了用户编号为${row.id}的这条数据`, { type: "success" });
+  async function handleDelete(row) {
+    const ret = await new UserApi().delete(row.id);
+
+    message(`您删除了用户名为${row.username}的这条数据`, { type: "success" });
+
     onSearch();
   }
 
@@ -292,27 +297,27 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
   const resetForm = formEl => {
     if (!formEl) return;
     formEl.resetFields();
-    form.deptId = "";
-    treeRef.value.onTreeReset();
+    // form.deptId = "";
+    // treeRef.value.onTreeReset();
     onSearch();
   };
 
-  function onTreeSelect({ id, selected }) {
-    form.deptId = selected ? id : "";
-    onSearch();
-  }
+  // function onTreeSelect({ id, selected }) {
+  //   form.deptId = selected ? id : "";
+  //   onSearch();
+  // }
 
-  function formatHigherDeptOptions(treeList) {
-    // 根据返回数据的status字段值判断追加是否禁用disabled字段，返回处理后的树结构，用于上级部门级联选择器的展示（实际开发中也是如此，不可能前端需要的每个字段后端都会返回，这时需要前端自行根据后端返回的某些字段做逻辑处理）
-    if (!treeList || !treeList.length) return;
-    const newTreeList = [];
-    for (let i = 0; i < treeList.length; i++) {
-      treeList[i].disabled = treeList[i].is_active === false ? true : false;
-      formatHigherDeptOptions(treeList[i].children);
-      newTreeList.push(treeList[i]);
-    }
-    return newTreeList;
-  }
+  // function formatHigherDeptOptions(treeList) {
+  //   // 根据返回数据的status字段值判断追加是否禁用disabled字段，返回处理后的树结构，用于上级部门级联选择器的展示（实际开发中也是如此，不可能前端需要的每个字段后端都会返回，这时需要前端自行根据后端返回的某些字段做逻辑处理）
+  //   if (!treeList || !treeList.length) return;
+  //   const newTreeList = [];
+  //   for (let i = 0; i < treeList.length; i++) {
+  //     treeList[i].disabled = treeList[i].is_active === false ? true : false;
+  //     formatHigherDeptOptions(treeList[i].children);
+  //     newTreeList.push(treeList[i]);
+  //   }
+  //   return newTreeList;
+  // }
 
   function openDialog(title = "新增", row?: FormItemProps) {
     addDialog({
@@ -320,9 +325,9 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
       props: {
         formInline: {
           title,
-          higherDeptOptions: formatHigherDeptOptions(higherDeptOptions.value),
+          // higherDeptOptions: formatHigherDeptOptions(higherDeptOptions.value),
           id: row?.id ?? null,
-          parentId: row?.dept?.id ?? 0,
+          // parentId: row?.dept?.id ?? 0,
           nickname: row?.nickname ?? "",
           username: row?.username ?? "",
           password: row?.password ?? "",
@@ -384,9 +389,12 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
           imgSrc: row.avatar || userAvatar,
           onCropper: info => (avatarInfo.value = info)
         }),
-      beforeSure: done => {
+      beforeSure: async done => {
         console.log("裁剪后的图片信息：", avatarInfo.value);
         // 根据实际业务使用avatarInfo.value和row里的某些字段去调用上传头像接口即可
+        row.avatar = avatarInfo.value.base64;
+        const ret = await new UserApi().update(row);
+
         done(); // 关闭弹框
         onSearch(); // 刷新表格数据
       },
@@ -458,9 +466,14 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
       ),
       closeCallBack: () => (pwdForm.newPwd = ""),
       beforeSure: done => {
-        ruleFormRef.value.validate(valid => {
+        ruleFormRef.value.validate(async valid => {
           if (valid) {
             // 表单规则校验通过
+            const ret = await new UserApi().resetpwd({
+              id: row.id,
+              password: pwdForm.newPwd
+            });
+
             message(`已成功重置 ${row.username} 用户的密码`, {
               type: "success"
             });
@@ -477,7 +490,8 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
   /** 分配角色 */
   async function handleRole(row) {
     // 选中的角色列表
-    const ids = (await getRoleIds({ userId: row.id })).data ?? [];
+    // const ids = (await getRoleIds({ userId: row.id })).data ?? [];
+    const ids = row.roles ?? [];
     addDialog({
       title: `分配 ${row.username} 用户的角色`,
       props: {
@@ -494,27 +508,33 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
       fullscreenIcon: true,
       closeOnClickModal: false,
       contentRenderer: () => h(roleForm),
-      beforeSure: (done, { options }) => {
+      beforeSure: async (done, { options }) => {
         const curData = options.props.formInline as RoleFormItemProps;
         console.log("curIds", curData.ids);
         // 根据实际业务使用curData.ids和row里的某些字段去调用修改角色接口即可
+        row.roles = curData.ids;
+        const ret = await new UserApi().update(row);
+
         done(); // 关闭弹框
       }
     });
   }
 
   onMounted(async () => {
-    treeLoading.value = true;
+    // treeLoading.value = true;
     onSearch();
 
     // 归属部门
-    const { data } = await getDeptList();
-    higherDeptOptions.value = handleTree(data);
-    treeData.value = handleTree(data);
-    treeLoading.value = false;
+    // const { data } = await getDeptList();
+    // higherDeptOptions.value = handleTree(data);
+    // treeData.value = handleTree(data);
+    // treeLoading.value = false;
 
     // 角色列表
-    roleOptions.value = (await getAllRoleList()).data;
+    // roleOptions.value = (await getAllRoleList()).data;
+
+    const ret = await new RolesApi().list();
+    roleOptions.value = ret.data;
   });
 
   return {
@@ -522,8 +542,8 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
     loading,
     columns,
     dataList,
-    treeData,
-    treeLoading,
+    // treeData,
+    // treeLoading,
     selectedNum,
     pagination,
     buttonClass,
@@ -532,7 +552,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
     resetForm,
     onbatchDel,
     openDialog,
-    onTreeSelect,
+    // onTreeSelect,
     handleUpdate,
     handleDelete,
     handleUpload,

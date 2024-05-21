@@ -60,7 +60,8 @@ const systemManagementRouter = {
       meta: {
         icon: "ri:admin-line",
         title: "menus.pureUser",
-        roles: ["admin"]
+        roles: null,
+        fixedTag: false
       }
     },
     {
@@ -69,7 +70,7 @@ const systemManagementRouter = {
       meta: {
         icon: "ri:admin-fill",
         title: "menus.pureRole",
-        roles: ["admin"]
+        roles: null
       }
     },
     {
@@ -78,7 +79,7 @@ const systemManagementRouter = {
       meta: {
         icon: "ep:menu",
         title: "menus.pureSystemMenu",
-        roles: ["admin"]
+        roles: null
       }
     },
     {
@@ -87,7 +88,7 @@ const systemManagementRouter = {
       meta: {
         icon: "ri:git-branch-line",
         title: "menus.pureDept",
-        roles: ["admin"]
+        roles: null
       }
     }
   ]

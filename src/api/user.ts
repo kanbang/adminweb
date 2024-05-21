@@ -21,10 +21,10 @@ export type UserResult = {
     /** 当前登录用户的角色 */
     roles: Array<string>;
     /** `token` */
-    accessToken: string;
-    /** 用于调用刷新`accessToken`的接口时所需的`token` */
+    access_token: string;
+    /** 用于调用刷新`access_token`的接口时所需的`token` */
     refreshToken: string;
-    /** `accessToken`的过期时间（格式'xxxx/xx/xx xx:xx:xx'） */
+    /** `access_token`的过期时间（格式'xxxx/xx/xx xx:xx:xx'） */
     expires: Date;
   };
 };
@@ -33,17 +33,48 @@ export type RefreshTokenResult = {
   success: boolean;
   data: {
     /** `token` */
-    accessToken: string;
-    /** 用于调用刷新`accessToken`的接口时所需的`token` */
+    access_token: string;
+    /** 用于调用刷新`access_token`的接口时所需的`token` */
     refreshToken: string;
-    /** `accessToken`的过期时间（格式'xxxx/xx/xx xx:xx:xx'） */
+    /** `access_token`的过期时间（格式'xxxx/xx/xx xx:xx:xx'） */
     expires: Date;
   };
 };
 
 /** 登录 */
 export const getLogin = (data?: object) => {
-  return http.request<UserResult>("post", "/login", { data });
+  // return http.request<UserResult>("post", "/login", { data });
+
+  return http.request(
+    "post",
+    `/api/auth/jwt/login`,
+    { data },
+    {
+      headers: {
+        "Content-Type": "application/x-www-urlencoded"
+      }
+    }
+  );
+};
+
+export const getUserInfo = () => {
+  return http.request("get", `/api/users/me`);
+
+  // return new Promise<UserInfoResult>((resolve, reject) => {
+  //   userInfoApi
+  //     .self()
+  //     .then(res => {
+  //       if (res.code === 1000) {
+  //         setUserInfo(res.data);
+  //         resolve(res);
+  //       } else {
+  //         reject(res);
+  //       }
+  //     })
+  //     .catch(error => {
+  //       reject(error);
+  //     });
+  // });
 };
 
 /** 刷新`token` */
@@ -58,5 +89,9 @@ export class UserApi extends CrudApi {
 
   register(data?: T) {
     return http.request<T>("post", `/${this.prefix}/register`, { data });
+  }
+
+  resetpwd(data?: T) {
+    return http.request<T>("post", `/${this.prefix}/resetpwd`, { data });
   }
 }

@@ -11,8 +11,10 @@ import type {
 } from "./types.d";
 import { stringify } from "qs";
 import NProgress from "../progress";
-import { getToken, formatToken } from "@/utils/auth";
+import { getToken, formatToken, removeToken } from "@/utils/auth";
 import { useUserStoreHook } from "@/store/modules/user";
+import { ElMessage } from "element-plus";
+import router from "@/router";
 
 // 相关配置请参考：www.axios-js.com/zh-cn/docs/#axios-request-config-1
 const defaultConfig: AxiosRequestConfig = {
@@ -28,6 +30,13 @@ const defaultConfig: AxiosRequestConfig = {
     serialize: stringify as unknown as CustomParamsSerializer
   }
 };
+
+/** 
+POST请求的编码格式：
+application/x-www-urlencoded 是浏览器默认的编码格式，用于键值对参数，参数之间用&间隔
+multipart/form-data 常用于文件等二进制，也可用于键值对参数，最后连接成一串字符传输
+application/json 也经常使用
+*/
 
 class PureHttp {
   constructor() {
@@ -88,7 +97,7 @@ class PureHttp {
                     useUserStoreHook()
                       .handRefreshToken({ refreshToken: data.refreshToken })
                       .then(res => {
-                        const token = res.data.accessToken;
+                        const token = res.data.access_token;
                         config.headers["Authorization"] = formatToken(token);
                         PureHttp.requests.forEach(cb => cb(token));
                         PureHttp.requests = [];
@@ -100,7 +109,7 @@ class PureHttp {
                   resolve(PureHttp.retryOriginalRequest(config));
                 } else {
                   config.headers["Authorization"] = formatToken(
-                    data.accessToken
+                    data.access_token
                   );
                   resolve(config);
                 }
@@ -167,7 +176,32 @@ class PureHttp {
           resolve(response);
         })
         .catch(error => {
-          reject(error);
+          if (error.response && error.response.status) {
+            if (error.response.status === 401) {
+              ElMessage.error(error.response.data.detail);
+              removeToken();
+              window.location.reload();
+              // router.push({ name: "Login" })
+            } else if (error.response.status === 403) {
+              ElMessage.error(error.response.data.detail);
+              // router.push("/error/403");
+            } else if (error.response.status === 400) {
+              ElMessage.error(error.response.data.detail);
+              // router.push("/error/403");
+            } else if (error.response.status === 404) {
+              ElMessage.error(error.response.data.detail);
+              router.push("/error/404");
+            } else if (error.response.status === 500) {
+              ElMessage.error(
+                error.response.data?.detail ?? error.response.statusText
+              );
+              router.push("/error/500");
+            }
+            reject(error.response.data);
+          } else {
+            ElMessage.error(error.message);
+            reject(error);
+          }
         });
     });
   }

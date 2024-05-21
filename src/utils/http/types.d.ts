@@ -6,7 +6,7 @@ import type {
 } from "axios";
 
 export type resultType = {
-  accessToken?: string;
+  access_token?: string;
 };
 
 export type RequestMethods = Extract<

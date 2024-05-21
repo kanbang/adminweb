@@ -11,10 +11,17 @@ import {
   type UserResult,
   type RefreshTokenResult,
   getLogin,
-  refreshTokenApi
+  refreshTokenApi,
+  getUserInfo
 } from "@/api/user";
 import { useMultiTagsStoreHook } from "./multiTags";
-import { type DataInfo, setToken, removeToken, userKey } from "@/utils/auth";
+import {
+  type DataInfo,
+  setToken,
+  removeToken,
+  userKey,
+  setUserInfo
+} from "@/utils/auth";
 
 export const useUserStore = defineStore({
   id: "pure-user",
@@ -61,9 +68,21 @@ export const useUserStore = defineStore({
     async loginByUsername(data) {
       return new Promise<UserResult>((resolve, reject) => {
         getLogin(data)
-          .then(data => {
-            if (data?.success) setToken(data.data);
-            resolve(data);
+          .then(auth => {
+            if (auth?.access_token) {
+              setToken(auth);
+              getUserInfo().then(user => {
+                if (user) {
+                  auth.username = user.username;
+                  auth.nickname = user.nickname;
+                  auth.roles = user.roles;
+                  auth.avatar = user.avatar;
+                  setUserInfo(auth);
+                }
+
+                resolve(auth);
+              });
+            }
           })
           .catch(error => {
             reject(error);

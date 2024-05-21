@@ -49,10 +49,24 @@ const onLogin = async (formEl: FormInstance | undefined) => {
   await formEl.validate((valid, fields) => {
     if (valid) {
       loading.value = true;
+
+      const payload = new FormData();
+      payload.append("username", ruleForm.username + "@mail.com");
+      payload.append("password", ruleForm.password);
+
       useUserStoreHook()
-        .loginByUsername({ username: ruleForm.username, password: "admin123" })
+        .loginByUsername(payload)
         .then(res => {
-          if (res.success) {
+          // access_token
+          // :
+          // "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMGNmMTMyYy1hZTk4LTQwODktYmRjNi1iOTViNDI0YTQ5NDIiLCJhdWQiOlsiZmFzdGFwaS11c2VyczphdXRoIl19.D8dxoSKuCerOGpXS_jgE5r4lmsAt7hSAoyu9d7D2Ypg"
+          // token_type
+          // :
+          // "bearer"
+
+          if (res.access_token) {
+            // /api/users/me
+
             // 获取后端路由
             return initRouter().then(() => {
               router.push(getTopMenu(true).path).then(() => {

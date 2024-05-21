@@ -2,12 +2,16 @@ import Cookies from "js-cookie";
 import { storageLocal } from "@pureadmin/utils";
 import { useUserStoreHook } from "@/store/modules/user";
 
+// "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMGNmMTMyYy1hZTk4LTQwODktYmRjNi1iOTViNDI0YTQ5NDIiLCJhdWQiOlsiZmFzdGFwaS11c2VyczphdXRoIl0sImV4cCI6MTcxNjE5MzYwNX0.QCEWILy9lkh_oZNulnoUfV9r6JC9u4Pyk4ZUgsulJz8",
+// "token_type": "bearer",
+// "expires": 604800
+
 export interface DataInfo<T> {
   /** token */
-  accessToken: string;
-  /** `accessToken`的过期时间（时间戳） */
+  access_token: string;
+  /** `access_token`的过期时间（时间戳） */
   expires: T;
-  /** 用于调用刷新accessToken的接口时所需的token */
+  /** 用于调用刷新access_token的接口时所需的token */
   refreshToken: string;
   /** 头像 */
   avatar?: string;
@@ -39,21 +43,27 @@ export function getToken(): DataInfo<number> {
 
 /**
  * @description 设置`token`以及一些必要信息并采用无感刷新`token`方案
- * 无感刷新：后端返回`accessToken`（访问接口使用的`token`）、`refreshToken`（用于调用刷新`accessToken`的接口时所需的`token`，`refreshToken`的过期时间（比如30天）应大于`accessToken`的过期时间（比如2小时））、`expires`（`accessToken`的过期时间）
- * 将`accessToken`、`expires`、`refreshToken`这三条信息放在key值为authorized-token的cookie里（过期自动销毁）
+ * 无感刷新：后端返回`access_token`（访问接口使用的`token`）、`refreshToken`（用于调用刷新`access_token`的接口时所需的`token`，`refreshToken`的过期时间（比如30天）应大于`access_token`的过期时间（比如2小时））、`expires`（`access_token`的过期时间）
+ * 将`access_token`、`expires`、`refreshToken`这三条信息放在key值为authorized-token的cookie里（过期自动销毁）
  * 将`avatar`、`username`、`nickname`、`roles`、`refreshToken`、`expires`这六条信息放在key值为`user-info`的localStorage里（利用`multipleTabsKey`当浏览器完全关闭后自动销毁）
  */
-export function setToken(data: DataInfo<Date>) {
-  let expires = 0;
-  const { accessToken, refreshToken } = data;
+export function setToken(data: DataInfo<number>) {
+  const { access_token, refreshToken } = data;
   const { isRemembered, loginDay } = useUserStoreHook();
-  expires = new Date(data.expires).getTime(); // 如果后端直接设置时间戳，将此处代码改为expires = data.expires，然后把上面的DataInfo<Date>改成DataInfo<number>即可
-  const cookieString = JSON.stringify({ accessToken, expires, refreshToken });
 
-  expires > 0
-    ? Cookies.set(TokenKey, cookieString, {
-        expires: (expires - Date.now()) / 86400000
-      })
+  // 如果后端直接设置时间戳，将此处代码改为expires = data.expires，然后把上面的DataInfo<Date>改成DataInfo<number>即可
+  // expires = (new Date(data.expires).getTime() - Date.now()) / 86400000;
+
+  let expires = new Date(Date.now() + data.lifetime_seconds * 1000);
+
+  const cookieString = JSON.stringify({
+    access_token,
+    expires: expires.getTime(),
+    refreshToken
+  });
+
+  data.lifetime_seconds > 0
+    ? Cookies.set(TokenKey, cookieString, { expires })
     : Cookies.set(TokenKey, cookieString);
 
   Cookies.set(
@@ -65,6 +75,11 @@ export function setToken(data: DataInfo<Date>) {
         }
       : {}
   );
+}
+
+export function setUserInfo(data) {
+  let refreshToken = null;
+  let expires = data.expires;
 
   function setUserKey({ avatar, username, nickname, roles }) {
     useUserStoreHook().SET_AVATAR(avatar);

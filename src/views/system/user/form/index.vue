@@ -8,7 +8,7 @@ import { usePublicHooks } from "../../hooks";
 const props = withDefaults(defineProps<FormProps>(), {
   formInline: () => ({
     title: "新增",
-    higherDeptOptions: [],
+    // higherDeptOptions: [],
     parentId: 0,
     nickname: "",
     username: "",
@@ -23,11 +23,11 @@ const props = withDefaults(defineProps<FormProps>(), {
 
 const sexOptions = [
   {
-    value: 0,
+    value: "男",
     label: "男"
   },
   {
-    value: 1,
+    value: "女",
     label: "女"
   }
 ];
@@ -120,7 +120,7 @@ defineExpose({ getRef });
         </el-form-item>
       </re-col>
 
-      <re-col :value="12" :xs="24" :sm="24">
+      <!-- <re-col :value="12" :xs="24" :sm="24">
         <el-form-item label="归属部门">
           <el-cascader
             v-model="newFormInline.parentId"
@@ -142,7 +142,8 @@ defineExpose({ getRef });
             </template>
           </el-cascader>
         </el-form-item>
-      </re-col>
+      </re-col> -->
+
       <re-col
         v-if="newFormInline.title === '新增'"
         :value="12"

@@ -19,7 +19,8 @@ type Result = {
 export const getAsyncRoutes = async () => {
   // return http.request<Result>("get", "/get-async-routes");
 
-  let ret = await new MenuApi().list();
+  // let ret = await new MenuApi().list();
+  let ret = await new MenuApi().routes();
 
   const routes = ret.data.map(item => {
     const { id, name, path, parentId, ...rest } = item;
@@ -28,7 +29,7 @@ export const getAsyncRoutes = async () => {
       name,
       path,
       parentId,
-      meta: { ...rest, roles: ["admin"] }
+      meta: { ...rest, roles: null }
     };
   });
 

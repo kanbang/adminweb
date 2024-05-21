@@ -15,7 +15,7 @@ export default defineFakeRoute([
             nickname: "小铭",
             // 一个用户可能有多个角色
             roles: ["admin"],
-            accessToken: "eyJhbGciOiJIUzUxMiJ9.admin",
+            access_token: "eyJhbGciOiJIUzUxMiJ9.admin",
             refreshToken: "eyJhbGciOiJIUzUxMiJ9.adminRefresh",
             expires: "2030/10/30 00:00:00"
           }
@@ -28,7 +28,7 @@ export default defineFakeRoute([
             username: "common",
             nickname: "小林",
             roles: ["common"],
-            accessToken: "eyJhbGciOiJIUzUxMiJ9.common",
+            access_token: "eyJhbGciOiJIUzUxMiJ9.common",
             refreshToken: "eyJhbGciOiJIUzUxMiJ9.commonRefresh",
             expires: "2030/10/30 00:00:00"
           }

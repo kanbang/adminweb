@@ -575,7 +575,7 @@ onBeforeUnmount(() => {
           :class="[
             'scroll-item is-closable',
             linkIsActive(item),
-            !isAllEmpty(item?.meta?.fixedTag) && 'fixed-tag'
+            item?.meta?.fixedTag && 'fixed-tag'
           ]"
           @contextmenu.prevent="openMenu(item, $event)"
           @mouseenter.prevent="onMouseenter(index)"
@@ -589,7 +589,7 @@ onBeforeUnmount(() => {
           </span>
           <span
             v-if="
-              isAllEmpty(item?.meta?.fixedTag)
+              !item?.meta?.fixedTag
                 ? iconIsActive(item, index) ||
                   (index === activeIndex && index !== 0)
                 : false
